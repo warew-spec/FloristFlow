@@ -2,30 +2,27 @@ package floristflow.view;
 
 import floristflow.model.Flower;
 import floristflow.service.StockService;
+import floristflow.view.ui.ModernButton;
+import floristflow.view.ui.RoundedPanel;
+import floristflow.view.ui.UITheme;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.List;
-import java.util.Locale;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 
 /**
- * Form GUI untuk Modul Input Stock (Manajemen Persediaan Bunga).
- * Menerapkan CRUD (Create, Read, Update, Delete), pencarian, dan restock cepat.
+ * Form GUI Input Stock Bunga FloristFlow dengan tema Modern Floral Boutique.
  */
 public class StockForm extends JFrame {
 
     private final StockService stockService = StockService.getInstance();
-    private final DecimalFormat currencyFormat;
 
     // Komponen Form Input
     private JTextField txtCode;
@@ -38,12 +35,12 @@ public class StockForm extends JFrame {
     private JTextField txtStock;
 
     // Tombol Aksi
-    private JButton btnAdd;
-    private JButton btnUpdate;
-    private JButton btnDelete;
-    private JButton btnClear;
-    private JButton btnAutoCode;
-    private JButton btnQuickRestock;
+    private ModernButton btnAdd;
+    private ModernButton btnUpdate;
+    private ModernButton btnDelete;
+    private ModernButton btnClear;
+    private ModernButton btnAutoCode;
+    private ModernButton btnQuickRestock;
 
     // Komponen Tabel & Pencarian
     private JTextField txtSearch;
@@ -55,21 +52,7 @@ public class StockForm extends JFrame {
     private JLabel lblTotalStems;
     private JLabel lblTotalValue;
 
-    // Skema Warna FloristFlow
-    private static final Color PRIMARY_COLOR = new Color(46, 117, 89);     // Forest Green
-    private static final Color SECONDARY_COLOR = new Color(214, 90, 117);  // Soft Rose
-    private static final Color WARNING_COLOR = new Color(230, 126, 34);    // Orange
-    private static final Color DANGER_COLOR = new Color(220, 53, 69);      // Red
-    private static final Color BG_COLOR = new Color(245, 247, 248);
-    private static final Color TEXT_DARK = new Color(40, 44, 52);
-
     public StockForm() {
-        // Inisialisasi format mata uang Rupiah
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("id-ID"));
-        symbols.setGroupingSeparator('.');
-        symbols.setDecimalSeparator(',');
-        this.currencyFormat = new DecimalFormat("Rp #,###", symbols);
-
         initComponents();
         loadTableData();
         updateStatistics();
@@ -77,28 +60,24 @@ public class StockForm extends JFrame {
     }
 
     private void initComponents() {
-        setTitle("FloristFlow - Manajemen Input Stock Bunga");
+        setTitle("FloristFlow - Manajemen Inventaris Stok Bunga");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(1080, 680);
+        setSize(1120, 700);
         setLocationRelativeTo(null);
-        getContentPane().setBackground(BG_COLOR);
+        getContentPane().setBackground(UITheme.BG_MAIN);
         setLayout(new BorderLayout());
 
-        // Top Header
+        // TOP BAR
         JPanel topBar = new JPanel(new BorderLayout());
-        topBar.setBackground(PRIMARY_COLOR);
-        topBar.setBorder(new EmptyBorder(12, 20, 12, 20));
+        topBar.setBackground(UITheme.PRIMARY);
+        topBar.setBorder(new EmptyBorder(14, 25, 14, 25));
 
-        JLabel lblTitle = new JLabel("🌸 Manajemen & Input Stock Bunga FloristFlow");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        JLabel lblTitle = new JLabel("🌸 Manajemen & Input Stock Bunga");
+        lblTitle.setFont(UITheme.FONT_TITLE);
         lblTitle.setForeground(Color.WHITE);
 
-        JButton btnBack = new JButton("← Kembali ke Dashboard");
-        btnBack.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnBack.setBackground(new Color(36, 92, 70));
-        btnBack.setForeground(Color.WHITE);
-        btnBack.setFocusPainted(false);
-        btnBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        ModernButton btnBack = new ModernButton("← Dashboard", new Color(28, 74, 57), Color.WHITE, 8);
+        btnBack.setFont(UITheme.FONT_BOLD);
         btnBack.addActionListener((ActionEvent e) -> {
             new MainDashboardForm().setVisible(true);
             dispose();
@@ -108,16 +87,16 @@ public class StockForm extends JFrame {
         topBar.add(btnBack, BorderLayout.EAST);
         add(topBar, BorderLayout.NORTH);
 
-        // Center Container (Split: Left Form, Right Table)
+        // MAIN CONTAINER
         JPanel mainContent = new JPanel(new BorderLayout(15, 0));
-        mainContent.setBackground(BG_COLOR);
-        mainContent.setBorder(new EmptyBorder(15, 15, 15, 15));
+        mainContent.setBackground(UITheme.BG_MAIN);
+        mainContent.setBorder(new EmptyBorder(15, 20, 15, 20));
 
-        // LEFT PANEL: Form Input
+        // LEFT: Form Card
         JPanel leftPanel = createFormPanel();
         mainContent.add(leftPanel, BorderLayout.WEST);
 
-        // RIGHT PANEL: Tabel dan Pencarian
+        // RIGHT: Table Card
         JPanel rightPanel = createTablePanel();
         mainContent.add(rightPanel, BorderLayout.CENTER);
 
@@ -125,218 +104,197 @@ public class StockForm extends JFrame {
     }
 
     private JPanel createFormPanel() {
-        JPanel formContainer = new JPanel();
-        formContainer.setLayout(new BoxLayout(formContainer, BoxLayout.Y_AXIS));
-        formContainer.setBackground(Color.WHITE);
-        formContainer.setPreferredSize(new Dimension(360, 0));
-        formContainer.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 225, 230), 1),
-                new EmptyBorder(15, 18, 15, 18)
-        ));
+        RoundedPanel formCard = new RoundedPanel(14, Color.WHITE, UITheme.BORDER, 1);
+        formCard.setLayout(new BoxLayout(formCard, BoxLayout.Y_AXIS));
+        formCard.setPreferredSize(new Dimension(360, 0));
+        formCard.setBorder(new EmptyBorder(18, 20, 18, 20));
 
         JLabel lblFormTitle = new JLabel("Form Data Bunga");
-        lblFormTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblFormTitle.setForeground(PRIMARY_COLOR);
-        lblFormTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-        formContainer.add(lblFormTitle);
-        formContainer.add(Box.createVerticalStrut(12));
+        lblFormTitle.setFont(UITheme.FONT_SUBTITLE);
+        lblFormTitle.setForeground(UITheme.PRIMARY);
+        formCard.add(lblFormTitle);
+        formCard.add(Box.createVerticalStrut(12));
 
-        // Kode Bunga + Auto Button
+        // Kode Bunga + Tombol Auto
         JLabel lblCode = new JLabel("Kode Bunga");
-        lblCode.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblCode.setFont(UITheme.FONT_BOLD);
+        lblCode.setForeground(UITheme.TEXT_DARK);
         txtCode = new JTextField();
-        txtCode.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        btnAutoCode = new JButton("Auto");
-        btnAutoCode.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        btnAutoCode.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        UITheme.styleTextField(txtCode);
+
+        btnAutoCode = new ModernButton("Auto", UITheme.PRIMARY_LIGHT, UITheme.PRIMARY, 6);
+        btnAutoCode.setFont(UITheme.FONT_SMALL);
+        btnAutoCode.setPreferredSize(new Dimension(65, 32));
         btnAutoCode.addActionListener((ActionEvent e) -> txtCode.setText(stockService.generateNextCode()));
 
-        JPanel pnlCode = new JPanel(new BorderLayout(5, 0));
+        JPanel pnlCode = new JPanel(new BorderLayout(6, 0));
         pnlCode.setOpaque(false);
-        pnlCode.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        pnlCode.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         pnlCode.add(txtCode, BorderLayout.CENTER);
         pnlCode.add(btnAutoCode, BorderLayout.EAST);
 
-        formContainer.add(lblCode);
-        formContainer.add(Box.createVerticalStrut(3));
-        formContainer.add(pnlCode);
-        formContainer.add(Box.createVerticalStrut(8));
+        formCard.add(lblCode);
+        formCard.add(Box.createVerticalStrut(3));
+        formCard.add(pnlCode);
+        formCard.add(Box.createVerticalStrut(8));
 
         // Nama Bunga
         JLabel lblName = new JLabel("Nama Bunga");
-        lblName.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblName.setFont(UITheme.FONT_BOLD);
+        lblName.setForeground(UITheme.TEXT_DARK);
         txtName = new JTextField();
-        txtName.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        txtName.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        UITheme.styleTextField(txtName);
+        txtName.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
 
-        formContainer.add(lblName);
-        formContainer.add(Box.createVerticalStrut(3));
-        formContainer.add(txtName);
-        formContainer.add(Box.createVerticalStrut(8));
+        formCard.add(lblName);
+        formCard.add(Box.createVerticalStrut(3));
+        formCard.add(txtName);
+        formCard.add(Box.createVerticalStrut(8));
 
         // Kategori
-        JLabel lblCategory = new JLabel("Kategori Bunga");
-        lblCategory.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        JLabel lblCat = new JLabel("Kategori Bunga");
+        lblCat.setFont(UITheme.FONT_BOLD);
+        lblCat.setForeground(UITheme.TEXT_DARK);
         String[] categories = {"Mawar", "Lily", "Tulip", "Sunflower", "Carnation", "Hydrangea", "Filler", "Lainnya"};
         cmbCategory = new JComboBox<>(categories);
-        cmbCategory.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cmbCategory.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        cmbCategory.setFont(UITheme.FONT_REGULAR_MEDIUM);
+        cmbCategory.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
 
-        formContainer.add(lblCategory);
-        formContainer.add(Box.createVerticalStrut(3));
-        formContainer.add(cmbCategory);
-        formContainer.add(Box.createVerticalStrut(8));
+        formCard.add(lblCat);
+        formCard.add(Box.createVerticalStrut(3));
+        formCard.add(cmbCategory);
+        formCard.add(Box.createVerticalStrut(8));
 
-        // Warna Kelopak & Satuan
-        JPanel pnlColorUnit = new JPanel(new GridLayout(1, 2, 8, 0));
-        pnlColorUnit.setOpaque(false);
-        pnlColorUnit.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        // Warna & Satuan
+        JPanel pnlColUnit = new JPanel(new GridLayout(1, 2, 8, 0));
+        pnlColUnit.setOpaque(false);
+        pnlColUnit.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
-        JPanel pnlCol1 = new JPanel();
-        pnlCol1.setLayout(new BoxLayout(pnlCol1, BoxLayout.Y_AXIS));
-        pnlCol1.setOpaque(false);
+        JPanel p1 = new JPanel();
+        p1.setLayout(new BoxLayout(p1, BoxLayout.Y_AXIS));
+        p1.setOpaque(false);
         JLabel lblColor = new JLabel("Warna");
-        lblColor.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblColor.setFont(UITheme.FONT_BOLD);
+        lblColor.setForeground(UITheme.TEXT_DARK);
         txtColor = new JTextField();
-        txtColor.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        txtColor.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        pnlCol1.add(lblColor);
-        pnlCol1.add(Box.createVerticalStrut(3));
-        pnlCol1.add(txtColor);
+        UITheme.styleTextField(txtColor);
+        txtColor.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        p1.add(lblColor);
+        p1.add(Box.createVerticalStrut(3));
+        p1.add(txtColor);
 
-        JPanel pnlCol2 = new JPanel();
-        pnlCol2.setLayout(new BoxLayout(pnlCol2, BoxLayout.Y_AXIS));
-        pnlCol2.setOpaque(false);
+        JPanel p2 = new JPanel();
+        p2.setLayout(new BoxLayout(p2, BoxLayout.Y_AXIS));
+        p2.setOpaque(false);
         JLabel lblUnit = new JLabel("Satuan");
-        lblUnit.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblUnit.setFont(UITheme.FONT_BOLD);
+        lblUnit.setForeground(UITheme.TEXT_DARK);
         String[] units = {"Tangkai", "Ikat", "Pot", "Buket"};
         cmbUnit = new JComboBox<>(units);
-        cmbUnit.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cmbUnit.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        pnlCol2.add(lblUnit);
-        pnlCol2.add(Box.createVerticalStrut(3));
-        pnlCol2.add(cmbUnit);
+        cmbUnit.setFont(UITheme.FONT_REGULAR_MEDIUM);
+        cmbUnit.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        p2.add(lblUnit);
+        p2.add(Box.createVerticalStrut(3));
+        p2.add(cmbUnit);
 
-        pnlColorUnit.add(pnlCol1);
-        pnlColorUnit.add(pnlCol2);
-
-        formContainer.add(pnlColorUnit);
-        formContainer.add(Box.createVerticalStrut(8));
+        pnlColUnit.add(p1);
+        pnlColUnit.add(p2);
+        formCard.add(pnlColUnit);
+        formCard.add(Box.createVerticalStrut(8));
 
         // Harga Beli & Harga Jual
         JPanel pnlPrices = new JPanel(new GridLayout(1, 2, 8, 0));
         pnlPrices.setOpaque(false);
         pnlPrices.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
-        JPanel pnlBuy = new JPanel();
-        pnlBuy.setLayout(new BoxLayout(pnlBuy, BoxLayout.Y_AXIS));
-        pnlBuy.setOpaque(false);
-        JLabel lblBuy = new JLabel("Harga Beli (Rp)");
-        lblBuy.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        JPanel pBuy = new JPanel();
+        pBuy.setLayout(new BoxLayout(pBuy, BoxLayout.Y_AXIS));
+        pBuy.setOpaque(false);
+        JLabel lblBuy = new JLabel("Harga Modal (Rp)");
+        lblBuy.setFont(UITheme.FONT_BOLD);
+        lblBuy.setForeground(UITheme.TEXT_DARK);
         txtBuyPrice = new JTextField();
-        txtBuyPrice.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        txtBuyPrice.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        pnlBuy.add(lblBuy);
-        pnlBuy.add(Box.createVerticalStrut(3));
-        pnlBuy.add(txtBuyPrice);
+        UITheme.styleTextField(txtBuyPrice);
+        txtBuyPrice.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        pBuy.add(lblBuy);
+        pBuy.add(Box.createVerticalStrut(3));
+        pBuy.add(txtBuyPrice);
 
-        JPanel pnlSell = new JPanel();
-        pnlSell.setLayout(new BoxLayout(pnlSell, BoxLayout.Y_AXIS));
-        pnlSell.setOpaque(false);
+        JPanel pSell = new JPanel();
+        pSell.setLayout(new BoxLayout(pSell, BoxLayout.Y_AXIS));
+        pSell.setOpaque(false);
         JLabel lblSell = new JLabel("Harga Jual (Rp)");
-        lblSell.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblSell.setFont(UITheme.FONT_BOLD);
+        lblSell.setForeground(UITheme.TEXT_DARK);
         txtSellPrice = new JTextField();
-        txtSellPrice.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        txtSellPrice.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        pnlSell.add(lblSell);
-        pnlSell.add(Box.createVerticalStrut(3));
-        pnlSell.add(txtSellPrice);
+        UITheme.styleTextField(txtSellPrice);
+        txtSellPrice.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        pSell.add(lblSell);
+        pSell.add(Box.createVerticalStrut(3));
+        pSell.add(txtSellPrice);
 
-        pnlPrices.add(pnlBuy);
-        pnlPrices.add(pnlSell);
-
-        formContainer.add(pnlPrices);
-        formContainer.add(Box.createVerticalStrut(8));
+        pnlPrices.add(pBuy);
+        pnlPrices.add(pSell);
+        formCard.add(pnlPrices);
+        formCard.add(Box.createVerticalStrut(8));
 
         // Stok
-        JLabel lblStock = new JLabel("Jumlah Stok Persediaan");
-        lblStock.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        JLabel lblStk = new JLabel("Kuantitas Stok Bunga");
+        lblStk.setFont(UITheme.FONT_BOLD);
+        lblStk.setForeground(UITheme.TEXT_DARK);
         txtStock = new JTextField();
-        txtStock.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        txtStock.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        UITheme.styleTextField(txtStock);
+        txtStock.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
 
-        formContainer.add(lblStock);
-        formContainer.add(Box.createVerticalStrut(3));
-        formContainer.add(txtStock);
-        formContainer.add(Box.createVerticalStrut(15));
+        formCard.add(lblStk);
+        formCard.add(Box.createVerticalStrut(3));
+        formCard.add(txtStock);
+        formCard.add(Box.createVerticalStrut(14));
 
-        // Buttons Action Panel
-        JPanel pnlButtons = new JPanel(new GridLayout(2, 2, 8, 8));
-        pnlButtons.setOpaque(false);
-        pnlButtons.setMaximumSize(new Dimension(Integer.MAX_VALUE, 75));
+        // Tombol Aksi Form
+        JPanel pnlBtns = new JPanel(new GridLayout(2, 2, 8, 8));
+        pnlBtns.setOpaque(false);
+        pnlBtns.setMaximumSize(new Dimension(Integer.MAX_VALUE, 76));
 
-        btnAdd = new JButton("➕ Tambah");
-        btnAdd.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnAdd.setBackground(PRIMARY_COLOR);
-        btnAdd.setForeground(Color.WHITE);
-        btnAdd.setFocusPainted(false);
-        btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnAdd = new ModernButton("➕ Simpan", UITheme.PRIMARY, Color.WHITE, 8);
         btnAdd.addActionListener((ActionEvent e) -> handleAddFlower());
 
-        btnUpdate = new JButton("✏️ Ubah");
-        btnUpdate.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnUpdate.setBackground(WARNING_COLOR);
-        btnUpdate.setForeground(Color.WHITE);
-        btnUpdate.setFocusPainted(false);
-        btnUpdate.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnUpdate = new ModernButton("✏️ Ubah", UITheme.STATUS_WARNING, Color.WHITE, 8);
         btnUpdate.addActionListener((ActionEvent e) -> handleUpdateFlower());
 
-        btnDelete = new JButton("🗑️ Hapus");
-        btnDelete.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnDelete.setBackground(DANGER_COLOR);
-        btnDelete.setForeground(Color.WHITE);
-        btnDelete.setFocusPainted(false);
-        btnDelete.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnDelete = new ModernButton("🗑️ Hapus", UITheme.STATUS_DANGER, Color.WHITE, 8);
         btnDelete.addActionListener((ActionEvent e) -> handleDeleteFlower());
 
-        btnClear = new JButton("🔄 Reset");
-        btnClear.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        btnClear.setBackground(new Color(230, 235, 240));
-        btnClear.setForeground(TEXT_DARK);
-        btnClear.setFocusPainted(false);
-        btnClear.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnClear = new ModernButton("🔄 Reset", new Color(241, 245, 249), UITheme.TEXT_DARK, 8);
         btnClear.addActionListener((ActionEvent e) -> clearForm());
 
-        pnlButtons.add(btnAdd);
-        pnlButtons.add(btnUpdate);
-        pnlButtons.add(btnDelete);
-        pnlButtons.add(btnClear);
+        pnlBtns.add(btnAdd);
+        pnlBtns.add(btnUpdate);
+        pnlBtns.add(btnDelete);
+        pnlBtns.add(btnClear);
 
-        formContainer.add(pnlButtons);
-        formContainer.add(Box.createVerticalGlue());
+        formCard.add(pnlBtns);
+        formCard.add(Box.createVerticalGlue());
 
-        return formContainer;
+        return formCard;
     }
 
     private JPanel createTablePanel() {
-        JPanel tableContainer = new JPanel(new BorderLayout(0, 10));
-        tableContainer.setBackground(BG_COLOR);
+        RoundedPanel tableCard = new RoundedPanel(14, Color.WHITE, UITheme.BORDER, 1);
+        tableCard.setLayout(new BorderLayout(0, 10));
+        tableCard.setBorder(new EmptyBorder(15, 18, 15, 18));
 
-        // Top of Table: Search Bar & KPI Summary Card
+        // Top Search & KPI Stats
         JPanel topSection = new JPanel(new BorderLayout(10, 0));
-        topSection.setBackground(Color.WHITE);
-        topSection.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 225, 230), 1),
-                new EmptyBorder(10, 15, 10, 15)
-        ));
+        topSection.setOpaque(false);
 
         // Search Bar
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        searchPanel.setOpaque(false);
-        JLabel lblSearch = new JLabel("🔍 Cari:");
-        lblSearch.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        JPanel searchBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        searchBar.setOpaque(false);
+        JLabel lblS = new JLabel("🔍 Cari:");
+        lblS.setFont(UITheme.FONT_BOLD);
         txtSearch = new JTextField(15);
-        txtSearch.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        UITheme.styleTextField(txtSearch);
         txtSearch.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -344,78 +302,67 @@ public class StockForm extends JFrame {
             }
         });
 
-        JButton btnResetSearch = new JButton("Clear");
-        btnResetSearch.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        btnResetSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnResetSearch.addActionListener((ActionEvent e) -> {
+        ModernButton btnClearSearch = new ModernButton("Reset", new Color(241, 245, 249), UITheme.TEXT_DARK, 6);
+        btnClearSearch.setPreferredSize(new Dimension(60, 30));
+        btnClearSearch.addActionListener((ActionEvent e) -> {
             txtSearch.setText("");
             loadTableData();
         });
 
-        searchPanel.add(lblSearch);
-        searchPanel.add(txtSearch);
-        searchPanel.add(btnResetSearch);
+        searchBar.add(lblS);
+        searchBar.add(txtSearch);
+        searchBar.add(btnClearSearch);
 
-        // KPI Summary Badges
-        JPanel kpiPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
-        kpiPanel.setOpaque(false);
+        // KPI Badges
+        JPanel kpiBadges = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
+        kpiBadges.setOpaque(false);
 
-        lblTotalVariants = new JLabel("🌺 Varian: 0");
-        lblTotalVariants.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        lblTotalVariants.setForeground(PRIMARY_COLOR);
+        lblTotalVariants = new JLabel("🌺 0 Varian");
+        lblTotalVariants.setFont(UITheme.FONT_BOLD);
+        lblTotalVariants.setForeground(UITheme.PRIMARY);
 
-        lblTotalStems = new JLabel("📦 Stok: 0");
-        lblTotalStems.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        lblTotalStems.setForeground(SECONDARY_COLOR);
+        lblTotalStems = new JLabel("📦 0 Tangkai");
+        lblTotalStems.setFont(UITheme.FONT_BOLD);
+        lblTotalStems.setForeground(UITheme.ACCENT_ROSE);
 
-        lblTotalValue = new JLabel("💰 Nilai Aset: Rp 0");
-        lblTotalValue.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        lblTotalValue.setForeground(new Color(40, 116, 166));
+        lblTotalValue = new JLabel("💰 Aset: Rp 0");
+        lblTotalValue.setFont(UITheme.FONT_BOLD);
+        lblTotalValue.setForeground(UITheme.STATUS_INFO);
 
-        kpiPanel.add(lblTotalVariants);
-        kpiPanel.add(lblTotalStems);
-        kpiPanel.add(lblTotalValue);
+        kpiBadges.add(lblTotalVariants);
+        kpiBadges.add(lblTotalStems);
+        kpiBadges.add(lblTotalValue);
 
-        topSection.add(searchPanel, BorderLayout.WEST);
-        topSection.add(kpiPanel, BorderLayout.EAST);
+        topSection.add(searchBar, BorderLayout.WEST);
+        topSection.add(kpiBadges, BorderLayout.EAST);
+        tableCard.add(topSection, BorderLayout.NORTH);
 
-        tableContainer.add(topSection, BorderLayout.NORTH);
-
-        // Table JTable
-        String[] columnNames = {"Kode", "Nama Bunga", "Kategori", "Warna", "Satuan", "Harga Beli", "Harga Jual", "Laba/Unit", "Stok"};
-        tableModel = new DefaultTableModel(columnNames, 0) {
+        // Table
+        String[] columns = {"Kode", "Nama Bunga", "Kategori", "Warna", "Satuan", "Harga Modal", "Harga Jual", "Laba/Unit", "Status Stok"};
+        tableModel = new DefaultTableModel(columns, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Read-only cells
+            public boolean isCellEditable(int r, int c) {
+                return false;
             }
         };
 
         tblFlowers = new JTable(tableModel);
-        tblFlowers.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        tblFlowers.setRowHeight(26);
-        tblFlowers.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tblFlowers.setGridColor(new Color(230, 235, 240));
+        UITheme.styleTable(tblFlowers);
 
-        JTableHeader header = tblFlowers.getTableHeader();
-        header.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        header.setBackground(new Color(238, 242, 245));
-        header.setForeground(TEXT_DARK);
+        // Center alignments
+        DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
+        centerRender.setHorizontalAlignment(SwingConstants.CENTER);
+        tblFlowers.getColumnModel().getColumn(0).setCellRenderer(centerRender);
+        tblFlowers.getColumnModel().getColumn(4).setCellRenderer(centerRender);
+        tblFlowers.getColumnModel().getColumn(8).setCellRenderer(centerRender);
 
-        // Center align text for Code, Unit, and Stock
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        tblFlowers.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
-        tblFlowers.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
-        tblFlowers.getColumnModel().getColumn(8).setCellRenderer(centerRenderer);
+        // Right alignments
+        DefaultTableCellRenderer rightRender = new DefaultTableCellRenderer();
+        rightRender.setHorizontalAlignment(SwingConstants.RIGHT);
+        tblFlowers.getColumnModel().getColumn(5).setCellRenderer(rightRender);
+        tblFlowers.getColumnModel().getColumn(6).setCellRenderer(rightRender);
+        tblFlowers.getColumnModel().getColumn(7).setCellRenderer(rightRender);
 
-        // Right align for currency columns
-        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-        rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
-        tblFlowers.getColumnModel().getColumn(5).setCellRenderer(rightRenderer);
-        tblFlowers.getColumnModel().getColumn(6).setCellRenderer(rightRenderer);
-        tblFlowers.getColumnModel().getColumn(7).setCellRenderer(rightRenderer);
-
-        // Column widths
         tblFlowers.getColumnModel().getColumn(0).setPreferredWidth(65);
         tblFlowers.getColumnModel().getColumn(1).setPreferredWidth(160);
         tblFlowers.getColumnModel().getColumn(2).setPreferredWidth(85);
@@ -424,45 +371,40 @@ public class StockForm extends JFrame {
         tblFlowers.getColumnModel().getColumn(5).setPreferredWidth(85);
         tblFlowers.getColumnModel().getColumn(6).setPreferredWidth(85);
         tblFlowers.getColumnModel().getColumn(7).setPreferredWidth(85);
-        tblFlowers.getColumnModel().getColumn(8).setPreferredWidth(55);
+        tblFlowers.getColumnModel().getColumn(8).setPreferredWidth(95);
 
-        // Row Selection Listener
         tblFlowers.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int selectedRow = tblFlowers.getSelectedRow();
-                if (selectedRow != -1) {
-                    populateFormFromSelectedRow(selectedRow);
+                int row = tblFlowers.getSelectedRow();
+                if (row != -1) {
+                    populateFormFromSelectedRow(row);
                 }
             }
         });
 
-        JScrollPane scrollPane = new JScrollPane(tblFlowers);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(220, 225, 230), 1));
-        tableContainer.add(scrollPane, BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(tblFlowers);
+        scroll.setBorder(BorderFactory.createLineBorder(UITheme.BORDER, 1));
+        tableCard.add(scroll, BorderLayout.CENTER);
 
-        // Bottom Action Bar: Quick Restock
-        JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        // Bottom Action: Restock
+        JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         bottomBar.setOpaque(false);
 
-        btnQuickRestock = new JButton("⚡ Tambah Stok Cepat (+Restock)");
-        btnQuickRestock.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnQuickRestock.setBackground(new Color(40, 116, 166));
-        btnQuickRestock.setForeground(Color.WHITE);
-        btnQuickRestock.setFocusPainted(false);
-        btnQuickRestock.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnQuickRestock = new ModernButton("⚡ Tambah Stok Cepat (+Restock)", UITheme.PRIMARY, Color.WHITE, 8);
+        btnQuickRestock.setPreferredSize(new Dimension(230, 36));
         btnQuickRestock.addActionListener((ActionEvent e) -> handleQuickRestock());
 
         bottomBar.add(btnQuickRestock);
-        tableContainer.add(bottomBar, BorderLayout.SOUTH);
+        tableCard.add(bottomBar, BorderLayout.SOUTH);
 
-        return tableContainer;
+        return tableCard;
     }
 
     private void loadTableData() {
         tableModel.setRowCount(0);
         for (Flower f : stockService.getAllFlowers()) {
-            addFlowerToTableModel(f);
+            addFlowerToTable(f);
         }
     }
 
@@ -470,28 +412,37 @@ public class StockForm extends JFrame {
         tableModel.setRowCount(0);
         List<Flower> results = stockService.searchFlowers(keyword);
         for (Flower f : results) {
-            addFlowerToTableModel(f);
+            addFlowerToTable(f);
         }
     }
 
-    private void addFlowerToTableModel(Flower f) {
+    private void addFlowerToTable(Flower f) {
+        String stockBadge;
+        if (f.getStock() == 0) {
+            stockBadge = "🔴 Habis (0)";
+        } else if (f.getStock() < 10) {
+            stockBadge = "🟠 " + f.getStock() + " " + f.getUnit();
+        } else {
+            stockBadge = "🟢 " + f.getStock() + " " + f.getUnit();
+        }
+
         tableModel.addRow(new Object[]{
             f.getCode(),
             f.getName(),
             f.getCategory(),
             f.getColor(),
             f.getUnit(),
-            currencyFormat.format(f.getBuyPrice()),
-            currencyFormat.format(f.getSellPrice()),
-            currencyFormat.format(f.calculateProfitPerUnit()),
-            f.getStock()
+            UITheme.formatRupiah(f.getBuyPrice()),
+            UITheme.formatRupiah(f.getSellPrice()),
+            UITheme.formatRupiah(f.calculateProfitPerUnit()),
+            stockBadge
         });
     }
 
     private void updateStatistics() {
-        lblTotalVariants.setText("🌺 Varian: " + stockService.getTotalFlowerTypes());
-        lblTotalStems.setText("📦 Total Stok: " + stockService.getTotalStockCount());
-        lblTotalValue.setText("💰 Nilai Aset: " + currencyFormat.format(stockService.getTotalStockAssetValue()));
+        lblTotalVariants.setText("🌺 " + stockService.getTotalFlowerTypes() + " Varian");
+        lblTotalStems.setText("📦 " + stockService.getTotalStockCount() + " Tangkai");
+        lblTotalValue.setText("💰 Aset: " + UITheme.formatRupiah(stockService.getTotalStockAssetValue()));
     }
 
     private void populateFormFromSelectedRow(int row) {
@@ -518,9 +469,7 @@ public class StockForm extends JFrame {
         String unit = (String) cmbUnit.getSelectedItem();
 
         if (code.isEmpty() || name.isEmpty() || color.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Harap lengkapi Kode, Nama, dan Warna Bunga!",
-                    "Validasi Gagal", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Harap lengkapi Kode, Nama, dan Warna Bunga!", "Validasi Gagal", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -533,9 +482,7 @@ public class StockForm extends JFrame {
             sellPrice = Double.parseDouble(txtSellPrice.getText().trim());
             stock = Integer.parseInt(txtStock.getText().trim());
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Harga dan Stok harus berupa angka valid!",
-                    "Format Angka Salah", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Harga dan Stok harus berupa angka valid!", "Format Angka Salah", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -543,25 +490,19 @@ public class StockForm extends JFrame {
         boolean success = stockService.addFlower(newFlower);
 
         if (success) {
-            JOptionPane.showMessageDialog(this,
-                    "Bunga " + name + " (" + code + ") berhasil ditambahkan!",
-                    "Sukses", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Bunga " + name + " (" + code + ") berhasil ditambahkan!", "Sukses", JOptionPane.INFORMATION_MESSAGE);
             loadTableData();
             updateStatistics();
             clearForm();
         } else {
-            JOptionPane.showMessageDialog(this,
-                    "Kode Bunga " + code + " sudah terdaftar! Gunakan kode lain atau klik [Auto].",
-                    "Gagal Tambah", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Kode Bunga " + code + " sudah terdaftar!", "Gagal Tambah", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void handleUpdateFlower() {
         String code = txtCode.getText().trim();
         if (code.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Pilih baris data bunga di tabel yang ingin diubah!",
-                    "Peringatan", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Pilih baris data bunga di tabel yang ingin diubah!", "Peringatan", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -579,9 +520,7 @@ public class StockForm extends JFrame {
             sellPrice = Double.parseDouble(txtSellPrice.getText().trim());
             stock = Integer.parseInt(txtStock.getText().trim());
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Harga dan Stok harus berupa angka valid!",
-                    "Format Angaran Salah", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Harga dan Stok harus berupa angka valid!", "Format Angka Salah", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -589,25 +528,17 @@ public class StockForm extends JFrame {
         boolean success = stockService.updateFlower(updatedFlower);
 
         if (success) {
-            JOptionPane.showMessageDialog(this,
-                    "Data bunga " + code + " berhasil diperbarui!",
-                    "Sukses", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Data bunga " + code + " berhasil diperbarui!", "Sukses", JOptionPane.INFORMATION_MESSAGE);
             loadTableData();
             updateStatistics();
             clearForm();
-        } else {
-            JOptionPane.showMessageDialog(this,
-                    "Bunga dengan kode " + code + " tidak ditemukan.",
-                    "Gagal Ubah", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void handleDeleteFlower() {
         String code = txtCode.getText().trim();
         if (code.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Pilih data bunga dari tabel yang ingin dihapus!",
-                    "Peringatan", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Pilih data bunga dari tabel yang ingin dihapus!", "Peringatan", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -618,9 +549,7 @@ public class StockForm extends JFrame {
         if (confirm == JOptionPane.YES_OPTION) {
             boolean success = stockService.deleteFlower(code);
             if (success) {
-                JOptionPane.showMessageDialog(this,
-                        "Bunga " + code + " berhasil dihapus dari sistem.",
-                        "Sukses", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Bunga " + code + " berhasil dihapus.", "Sukses", JOptionPane.INFORMATION_MESSAGE);
                 loadTableData();
                 updateStatistics();
                 clearForm();
@@ -631,9 +560,7 @@ public class StockForm extends JFrame {
     private void handleQuickRestock() {
         int selectedRow = tblFlowers.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this,
-                    "Silakan klik salah satu bunga di tabel yang ingin di-restock!",
-                    "Pilih Bunga", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Silakan klik bunga di tabel yang ingin di-restock!", "Pilih Bunga", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -657,9 +584,7 @@ public class StockForm extends JFrame {
                 updateStatistics();
                 clearForm();
 
-                JOptionPane.showMessageDialog(this,
-                        "Berhasil menambahkan " + qty + " stok untuk " + flowerName + "!",
-                        "Restock Berhasil", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Berhasil menambahkan " + qty + " stok untuk " + flowerName + "!", "Restock Berhasil", JOptionPane.INFORMATION_MESSAGE);
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this, "Harap masukkan angka bilangan bulat yang valid!", "Error", JOptionPane.ERROR_MESSAGE);
             }

@@ -7,62 +7,46 @@ import floristflow.model.OrderType;
 import floristflow.model.Transaction;
 import floristflow.service.ReportService;
 import floristflow.service.TransactionService;
+import floristflow.view.ui.ModernButton;
+import floristflow.view.ui.RoundedPanel;
+import floristflow.view.ui.UITheme;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.List;
-import java.util.Locale;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 
 /**
- * Form GUI untuk Modul Rekapitulasi (Laporan Keuangan, Omzet, Histori Transaksi,
- * dan Analisis Bunga Terlaris).
+ * Form GUI Rekapitulasi & Laporan Bisnis FloristFlow dengan tema Modern Floral Boutique.
  */
 public class ReportForm extends JFrame {
 
     private final ReportService reportService = ReportService.getInstance();
     private final TransactionService transactionService = TransactionService.getInstance();
-    private final DecimalFormat currencyFormat;
 
-    // KPI Summary Labels
+    // KPI Labels
     private JLabel lblKpiRevenue;
     private JLabel lblKpiProfit;
     private JLabel lblKpiTrxCount;
     private JLabel lblKpiFlowersSold;
 
-    // Komponen Tab 1: Riwayat Transaksi
+    // Tab 1: Histori Transaksi
     private JComboBox<String> cmbFilterType;
     private JTextField txtSearchTrx;
     private JTable tblTransactions;
     private DefaultTableModel trxTableModel;
-    private JButton btnViewReceipt;
+    private ModernButton btnViewReceipt;
 
-    // Komponen Tab 2: Rekap Performa Bunga
+    // Tab 2: Rekap Performa Bunga
     private JTable tblFlowerSales;
     private DefaultTableModel flowerSalesModel;
 
-    // Skema Warna FloristFlow
-    private static final Color PRIMARY_COLOR = new Color(46, 117, 89);     // Forest Green
-    private static final Color SECONDARY_COLOR = new Color(214, 90, 117);  // Soft Rose
-    private static final Color ACCENT_BLUE = new Color(41, 128, 185);
-    private static final Color ACCENT_GOLD = new Color(212, 160, 23);
-    private static final Color BG_COLOR = new Color(245, 247, 248);
-    private static final Color TEXT_DARK = new Color(40, 44, 52);
-
     public ReportForm() {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("id-ID"));
-        symbols.setGroupingSeparator('.');
-        symbols.setDecimalSeparator(',');
-        this.currencyFormat = new DecimalFormat("Rp #,###", symbols);
-
         initComponents();
         refreshAllData();
     }
@@ -70,37 +54,28 @@ public class ReportForm extends JFrame {
     private void initComponents() {
         setTitle("FloristFlow - Rekapitulasi Laporan Keuangan & Penjualan");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(1120, 720);
+        setSize(1140, 720);
         setLocationRelativeTo(null);
-        getContentPane().setBackground(BG_COLOR);
+        getContentPane().setBackground(UITheme.BG_MAIN);
         setLayout(new BorderLayout());
 
         // TOP BAR
         JPanel topBar = new JPanel(new BorderLayout());
-        topBar.setBackground(PRIMARY_COLOR);
-        topBar.setBorder(new EmptyBorder(12, 25, 12, 25));
+        topBar.setBackground(UITheme.PRIMARY);
+        topBar.setBorder(new EmptyBorder(14, 25, 14, 25));
 
-        JLabel lblTitle = new JLabel("📊 FloristFlow - Rekapitulasi & Laporan Keuangan");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        JLabel lblTitle = new JLabel("📊 FloristFlow - Rekapitulasi & Laporan Finansial");
+        lblTitle.setFont(UITheme.FONT_TITLE);
         lblTitle.setForeground(Color.WHITE);
 
         JPanel rightTop = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         rightTop.setOpaque(false);
 
-        JButton btnExport = new JButton("🖨️ Cetak / Ekspor Laporan");
-        btnExport.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnExport.setBackground(ACCENT_GOLD);
-        btnExport.setForeground(Color.WHITE);
-        btnExport.setFocusPainted(false);
-        btnExport.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        ModernButton btnExport = new ModernButton("🖨️ Cetak / Ekspor Laporan", UITheme.ACCENT_GOLD, Color.WHITE, 8);
         btnExport.addActionListener((ActionEvent e) -> showExportReportDialog());
 
-        JButton btnBack = new JButton("← Dashboard");
-        btnBack.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnBack.setBackground(new Color(36, 92, 70));
-        btnBack.setForeground(Color.WHITE);
-        btnBack.setFocusPainted(false);
-        btnBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        ModernButton btnBack = new ModernButton("← Dashboard", new Color(28, 74, 57), Color.WHITE, 8);
+        btnBack.setFont(UITheme.FONT_BOLD);
         btnBack.addActionListener((ActionEvent e) -> {
             new MainDashboardForm().setVisible(true);
             dispose();
@@ -115,17 +90,16 @@ public class ReportForm extends JFrame {
 
         // MAIN CONTENT
         JPanel mainContent = new JPanel(new BorderLayout(0, 15));
-        mainContent.setBackground(BG_COLOR);
+        mainContent.setBackground(UITheme.BG_MAIN);
         mainContent.setBorder(new EmptyBorder(15, 20, 15, 20));
 
-        // 1. KPI Cards Bar di bagian atas
-        JPanel kpiCardsPanel = createKpiCardsPanel();
-        mainContent.add(kpiCardsPanel, BorderLayout.NORTH);
+        // 1. KPI Cards Bar
+        JPanel kpiCards = createKpiCardsPanel();
+        mainContent.add(kpiCards, BorderLayout.NORTH);
 
-        // 2. Tabbed Pane: Tab 1 (Histori Transaksi), Tab 2 (Rekap Produk Bunga)
+        // 2. Tabbed Pane
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 13));
-
+        tabbedPane.setFont(UITheme.FONT_BOLD);
         tabbedPane.addTab("📋 Histori Seluruh Transaksi", createTransactionHistoryTab());
         tabbedPane.addTab("🌺 Rekap Produk Bunga Terlaris", createFlowerPerformanceTab());
 
@@ -136,68 +110,60 @@ public class ReportForm extends JFrame {
     private JPanel createKpiCardsPanel() {
         JPanel panel = new JPanel(new GridLayout(1, 4, 15, 0));
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(0, 85));
+        panel.setPreferredSize(new Dimension(0, 88));
 
         lblKpiRevenue = new JLabel("Rp 0");
         lblKpiProfit = new JLabel("Rp 0");
         lblKpiTrxCount = new JLabel("0");
         lblKpiFlowersSold = new JLabel("0 Tangkai");
 
-        panel.add(createSingleKpiCard("💰 Total Omzet Kotor", lblKpiRevenue, PRIMARY_COLOR));
-        panel.add(createSingleKpiCard("📈 Total Laba Bersih", lblKpiProfit, new Color(30, 132, 73)));
-        panel.add(createSingleKpiCard("🧾 Transaksi Selesai", lblKpiTrxCount, ACCENT_BLUE));
-        panel.add(createSingleKpiCard("🌸 Total Bunga Terjual", lblKpiFlowersSold, SECONDARY_COLOR));
+        panel.add(createKpiCard("💰 Total Omzet Kotor", lblKpiRevenue, UITheme.PRIMARY));
+        panel.add(createKpiCard("📈 Total Laba Bersih", lblKpiProfit, UITheme.STATUS_SUCCESS));
+        panel.add(createKpiCard("🧾 Transaksi Selesai", lblKpiTrxCount, UITheme.STATUS_INFO));
+        panel.add(createKpiCard("🌸 Total Bunga Terjual", lblKpiFlowersSold, UITheme.ACCENT_ROSE));
 
         return panel;
     }
 
-    private JPanel createSingleKpiCard(String title, JLabel valueLabel, Color accentColor) {
-        JPanel card = new JPanel();
+    private JPanel createKpiCard(String title, JLabel valLabel, Color accentColor) {
+        RoundedPanel card = new RoundedPanel(12, Color.WHITE, UITheme.BORDER, 1);
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 4, 0, 0, accentColor),
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(new Color(225, 230, 235), 1),
-                        new EmptyBorder(10, 14, 10, 14)
-                )
-        ));
+        card.setBorder(new EmptyBorder(12, 16, 12, 16));
 
-        JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblTitle.setForeground(new Color(110, 120, 130));
+        JLabel lbl = new JLabel(title);
+        lbl.setFont(UITheme.FONT_SMALL);
+        lbl.setForeground(UITheme.TEXT_MUTED);
 
-        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        valueLabel.setForeground(TEXT_DARK);
+        valLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        valLabel.setForeground(accentColor);
 
-        card.add(lblTitle);
+        card.add(lbl);
         card.add(Box.createVerticalStrut(4));
-        card.add(valueLabel);
-
+        card.add(valLabel);
         return card;
     }
 
     private JPanel createTransactionHistoryTab() {
-        JPanel panel = new JPanel(new BorderLayout(0, 10));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(new EmptyBorder(12, 15, 12, 15));
+        RoundedPanel panel = new RoundedPanel(14, Color.WHITE, UITheme.BORDER, 1);
+        panel.setLayout(new BorderLayout(0, 10));
+        panel.setBorder(new EmptyBorder(14, 16, 14, 16));
 
         // Filter Bar
         JPanel filterBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         filterBar.setOpaque(false);
 
         JLabel lblFilter = new JLabel("Filter Jenis:");
-        lblFilter.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblFilter.setFont(UITheme.FONT_BOLD);
 
         cmbFilterType = new JComboBox<>(new String[]{"Semua Jenis Pesanan", "Beli Bunga Langsung", "Buket Bunga Custom", "Vas Meja", "Gift Box"});
-        cmbFilterType.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        cmbFilterType.setFont(UITheme.FONT_REGULAR_MEDIUM);
         cmbFilterType.addActionListener((ActionEvent e) -> loadTransactionTable());
 
-        JLabel lblSearch = new JLabel("🔍 Cari (ID/Pelanggan/Kasir):");
-        lblSearch.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        JLabel lblSearch = new JLabel("🔍 Cari:");
+        lblSearch.setFont(UITheme.FONT_BOLD);
 
-        txtSearchTrx = new JTextField(14);
-        txtSearchTrx.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        txtSearchTrx = new JTextField(15);
+        UITheme.styleTextField(txtSearchTrx);
         txtSearchTrx.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -205,9 +171,8 @@ public class ReportForm extends JFrame {
             }
         });
 
-        JButton btnReset = new JButton("Reset Filter");
-        btnReset.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        btnReset.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        ModernButton btnReset = new ModernButton("Reset", new Color(241, 245, 249), UITheme.TEXT_DARK, 6);
+        btnReset.setPreferredSize(new Dimension(65, 30));
         btnReset.addActionListener((ActionEvent e) -> {
             cmbFilterType.setSelectedIndex(0);
             txtSearchTrx.setText("");
@@ -223,36 +188,28 @@ public class ReportForm extends JFrame {
 
         panel.add(filterBar, BorderLayout.NORTH);
 
-        // Tabel Riwayat Transaksi
+        // Table
         String[] columns = {"No. Transaksi", "Waktu Transaksi", "Pelanggan", "Kasir", "Jenis Pesanan", "Jml Item", "Total Bayar", "Laba Bersih"};
         trxTableModel = new DefaultTableModel(columns, 0) {
             @Override
-            public boolean isCellEditable(int row, int col) {
+            public boolean isCellEditable(int r, int c) {
                 return false;
             }
         };
 
         tblTransactions = new JTable(trxTableModel);
-        tblTransactions.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        tblTransactions.setRowHeight(25);
-        tblTransactions.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tblTransactions.setGridColor(new Color(230, 235, 240));
+        UITheme.styleTable(tblTransactions);
 
-        JTableHeader th = tblTransactions.getTableHeader();
-        th.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        th.setBackground(new Color(238, 242, 245));
+        DefaultTableCellRenderer center = new DefaultTableCellRenderer();
+        center.setHorizontalAlignment(SwingConstants.CENTER);
+        tblTransactions.getColumnModel().getColumn(0).setCellRenderer(center);
+        tblTransactions.getColumnModel().getColumn(1).setCellRenderer(center);
+        tblTransactions.getColumnModel().getColumn(5).setCellRenderer(center);
 
-        // Alignment
-        DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
-        centerRender.setHorizontalAlignment(SwingConstants.CENTER);
-        tblTransactions.getColumnModel().getColumn(0).setCellRenderer(centerRender);
-        tblTransactions.getColumnModel().getColumn(1).setCellRenderer(centerRender);
-        tblTransactions.getColumnModel().getColumn(5).setCellRenderer(centerRender);
-
-        DefaultTableCellRenderer rightRender = new DefaultTableCellRenderer();
-        rightRender.setHorizontalAlignment(SwingConstants.RIGHT);
-        tblTransactions.getColumnModel().getColumn(6).setCellRenderer(rightRender);
-        tblTransactions.getColumnModel().getColumn(7).setCellRenderer(rightRender);
+        DefaultTableCellRenderer right = new DefaultTableCellRenderer();
+        right.setHorizontalAlignment(SwingConstants.RIGHT);
+        tblTransactions.getColumnModel().getColumn(6).setCellRenderer(right);
+        tblTransactions.getColumnModel().getColumn(7).setCellRenderer(right);
 
         tblTransactions.getColumnModel().getColumn(0).setPreferredWidth(125);
         tblTransactions.getColumnModel().getColumn(1).setPreferredWidth(130);
@@ -264,19 +221,15 @@ public class ReportForm extends JFrame {
         tblTransactions.getColumnModel().getColumn(7).setPreferredWidth(95);
 
         JScrollPane scroll = new JScrollPane(tblTransactions);
-        scroll.setBorder(BorderFactory.createLineBorder(new Color(225, 230, 235), 1));
+        scroll.setBorder(BorderFactory.createLineBorder(UITheme.BORDER, 1));
         panel.add(scroll, BorderLayout.CENTER);
 
-        // Action Bawah
-        JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        // Bottom Action
+        JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         bottomBar.setOpaque(false);
 
-        btnViewReceipt = new JButton("🔍 Pratinjau / Cetak Struk Nota Terpilih");
-        btnViewReceipt.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnViewReceipt.setBackground(PRIMARY_COLOR);
-        btnViewReceipt.setForeground(Color.WHITE);
-        btnViewReceipt.setFocusPainted(false);
-        btnViewReceipt.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnViewReceipt = new ModernButton("🔍 Pratinjau / Cetak Struk Terpilih", UITheme.PRIMARY, Color.WHITE, 8);
+        btnViewReceipt.setPreferredSize(new Dimension(240, 36));
         btnViewReceipt.addActionListener((ActionEvent e) -> handleViewSelectedReceipt());
 
         bottomBar.add(btnViewReceipt);
@@ -286,45 +239,38 @@ public class ReportForm extends JFrame {
     }
 
     private JPanel createFlowerPerformanceTab() {
-        JPanel panel = new JPanel(new BorderLayout(0, 10));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(new EmptyBorder(12, 15, 12, 15));
+        RoundedPanel panel = new RoundedPanel(14, Color.WHITE, UITheme.BORDER, 1);
+        panel.setLayout(new BorderLayout(0, 10));
+        panel.setBorder(new EmptyBorder(14, 16, 14, 16));
 
         JLabel lblInfo = new JLabel("🏆 Analisis Penjualan & Produk Terlaris (Diurutkan dari Penjualan Tertinggi):");
-        lblInfo.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lblInfo.setForeground(PRIMARY_COLOR);
+        lblInfo.setFont(UITheme.FONT_SUBTITLE);
+        lblInfo.setForeground(UITheme.PRIMARY);
         panel.add(lblInfo, BorderLayout.NORTH);
 
         String[] columns = {"Ranking", "Kode", "Nama Bunga", "Kategori", "Harga Modal", "Harga Jual", "Terjual", "Total Omzet", "Total Laba Bersih"};
         flowerSalesModel = new DefaultTableModel(columns, 0) {
             @Override
-            public boolean isCellEditable(int row, int col) {
+            public boolean isCellEditable(int r, int c) {
                 return false;
             }
         };
 
         tblFlowerSales = new JTable(flowerSalesModel);
-        tblFlowerSales.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        tblFlowerSales.setRowHeight(25);
-        tblFlowerSales.setGridColor(new Color(230, 235, 240));
+        UITheme.styleTable(tblFlowerSales);
 
-        JTableHeader th = tblFlowerSales.getTableHeader();
-        th.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        th.setBackground(new Color(238, 242, 245));
+        DefaultTableCellRenderer center = new DefaultTableCellRenderer();
+        center.setHorizontalAlignment(SwingConstants.CENTER);
+        tblFlowerSales.getColumnModel().getColumn(0).setCellRenderer(center);
+        tblFlowerSales.getColumnModel().getColumn(1).setCellRenderer(center);
+        tblFlowerSales.getColumnModel().getColumn(6).setCellRenderer(center);
 
-        // Alignments
-        DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
-        centerRender.setHorizontalAlignment(SwingConstants.CENTER);
-        tblFlowerSales.getColumnModel().getColumn(0).setCellRenderer(centerRender);
-        tblFlowerSales.getColumnModel().getColumn(1).setCellRenderer(centerRender);
-        tblFlowerSales.getColumnModel().getColumn(6).setCellRenderer(centerRender);
-
-        DefaultTableCellRenderer rightRender = new DefaultTableCellRenderer();
-        rightRender.setHorizontalAlignment(SwingConstants.RIGHT);
-        tblFlowerSales.getColumnModel().getColumn(4).setCellRenderer(rightRender);
-        tblFlowerSales.getColumnModel().getColumn(5).setCellRenderer(rightRender);
-        tblFlowerSales.getColumnModel().getColumn(7).setCellRenderer(rightRender);
-        tblFlowerSales.getColumnModel().getColumn(8).setCellRenderer(rightRender);
+        DefaultTableCellRenderer right = new DefaultTableCellRenderer();
+        right.setHorizontalAlignment(SwingConstants.RIGHT);
+        tblFlowerSales.getColumnModel().getColumn(4).setCellRenderer(right);
+        tblFlowerSales.getColumnModel().getColumn(5).setCellRenderer(right);
+        tblFlowerSales.getColumnModel().getColumn(7).setCellRenderer(right);
+        tblFlowerSales.getColumnModel().getColumn(8).setCellRenderer(right);
 
         tblFlowerSales.getColumnModel().getColumn(0).setPreferredWidth(60);
         tblFlowerSales.getColumnModel().getColumn(1).setPreferredWidth(70);
@@ -337,20 +283,18 @@ public class ReportForm extends JFrame {
         tblFlowerSales.getColumnModel().getColumn(8).setPreferredWidth(100);
 
         JScrollPane scroll = new JScrollPane(tblFlowerSales);
-        scroll.setBorder(BorderFactory.createLineBorder(new Color(225, 230, 235), 1));
+        scroll.setBorder(BorderFactory.createLineBorder(UITheme.BORDER, 1));
         panel.add(scroll, BorderLayout.CENTER);
 
         return panel;
     }
 
     private void refreshAllData() {
-        // 1. Update KPI Card Values
-        lblKpiRevenue.setText(currencyFormat.format(transactionService.getTotalGrossRevenue()));
-        lblKpiProfit.setText(currencyFormat.format(transactionService.getTotalNetProfit()));
+        lblKpiRevenue.setText(UITheme.formatRupiah(transactionService.getTotalGrossRevenue()));
+        lblKpiProfit.setText(UITheme.formatRupiah(transactionService.getTotalNetProfit()));
         lblKpiTrxCount.setText(transactionService.getTotalTransactionsCount() + " Transaksi");
-        lblKpiFlowersSold.setText(transactionService.getTotalFlowersSold() + " Tangkai/Item");
+        lblKpiFlowersSold.setText(transactionService.getTotalFlowersSold() + " Tangkai");
 
-        // 2. Load Tables
         loadTransactionTable();
         loadFlowerPerformanceTable();
     }
@@ -376,8 +320,8 @@ public class ReportForm extends JFrame {
                 trx.getCashierName(),
                 trx.getOrderType().name(),
                 trx.getTotalQuantity() + " item",
-                currencyFormat.format(trx.calculateGrandTotal()),
-                currencyFormat.format(trx.calculateTotalProfit())
+                UITheme.formatRupiah(trx.calculateGrandTotal()),
+                UITheme.formatRupiah(trx.calculateTotalProfit())
             });
         }
     }
@@ -395,36 +339,34 @@ public class ReportForm extends JFrame {
                 f.getCode(),
                 f.getName(),
                 f.getCategory(),
-                currencyFormat.format(f.getBuyPrice()),
-                currencyFormat.format(f.getSellPrice()),
+                UITheme.formatRupiah(f.getBuyPrice()),
+                UITheme.formatRupiah(f.getSellPrice()),
                 s.getTotalSold() + " " + f.getUnit(),
-                currencyFormat.format(s.getTotalRevenue()),
-                currencyFormat.format(s.getTotalProfit())
+                UITheme.formatRupiah(s.getTotalRevenue()),
+                UITheme.formatRupiah(s.getTotalProfit())
             });
             rank++;
         }
     }
 
     private void handleViewSelectedReceipt() {
-        int selectedRow = tblTransactions.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this,
-                    "Silakan klik salah satu baris transaksi pada tabel di atas!",
-                    "Pilih Transaksi", JOptionPane.WARNING_MESSAGE);
+        int row = tblTransactions.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Silakan klik baris transaksi pada tabel di atas!", "Pilih Transaksi", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        String trxId = trxTableModel.getValueAt(selectedRow, 0).toString();
-        Transaction targetTrx = null;
+        String trxId = trxTableModel.getValueAt(row, 0).toString();
+        Transaction target = null;
         for (Transaction trx : transactionService.getAllTransactions()) {
             if (trx.getTransactionId().equalsIgnoreCase(trxId)) {
-                targetTrx = trx;
+                target = trx;
                 break;
             }
         }
 
-        if (targetTrx != null) {
-            showReceiptPopup(targetTrx);
+        if (target != null) {
+            showReceiptPopup(target);
         }
     }
 
@@ -458,21 +400,21 @@ public class ReportForm extends JFrame {
             String name = f.getName();
             if (name.length() > 20) name = name.substring(0, 18) + "..";
             sb.append(String.format(" %-2x %-20s %14s\n",
-                    item.getQuantity(), name, currencyFormat.format(item.getSubtotal())));
+                    item.getQuantity(), name, UITheme.formatRupiah(item.getSubtotal())));
         }
 
         sb.append("------------------------------------------\n");
-        sb.append(String.format("Subtotal Bunga       : %18s\n", currencyFormat.format(trx.calculateItemsSubtotal())));
+        sb.append(String.format("Subtotal Bunga       : %18s\n", UITheme.formatRupiah(trx.calculateItemsSubtotal())));
         if (trx.getWrappingFee() > 0) {
-            sb.append(String.format("Jasa Wrapping & Pita : %18s\n", currencyFormat.format(trx.getWrappingFee())));
+            sb.append(String.format("Jasa Wrapping & Pita : %18s\n", UITheme.formatRupiah(trx.getWrappingFee())));
         }
         if (trx.getDiscount() > 0) {
-            sb.append(String.format("Potongan Diskon      : %18s\n", currencyFormat.format(trx.getDiscount())));
+            sb.append(String.format("Potongan Diskon      : %18s\n", UITheme.formatRupiah(trx.getDiscount())));
         }
         sb.append("------------------------------------------\n");
-        sb.append(String.format("GRAND TOTAL          : %18s\n", currencyFormat.format(trx.calculateGrandTotal())));
-        sb.append(String.format("TUNAI DITERIMA       : %18s\n", currencyFormat.format(trx.getCashPaid())));
-        sb.append(String.format("KEMBALIAN            : %18s\n", currencyFormat.format(trx.calculateChange())));
+        sb.append(String.format("GRAND TOTAL          : %18s\n", UITheme.formatRupiah(trx.calculateGrandTotal())));
+        sb.append(String.format("TUNAI DITERIMA       : %18s\n", UITheme.formatRupiah(trx.getCashPaid())));
+        sb.append(String.format("KEMBALIAN            : %18s\n", UITheme.formatRupiah(trx.calculateChange())));
 
         if (trx.getGreetingCard() != null && !trx.getGreetingCard().trim().equals("-")) {
             sb.append("------------------------------------------\n");
@@ -486,7 +428,7 @@ public class ReportForm extends JFrame {
         dialog.add(scroll, BorderLayout.CENTER);
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        JButton btnClose = new JButton("Tutup");
+        ModernButton btnClose = new ModernButton("Tutup", UITheme.PRIMARY, Color.WHITE, 8);
         btnClose.addActionListener((ActionEvent e) -> dialog.dispose());
         btnPanel.add(btnClose);
 
@@ -495,7 +437,7 @@ public class ReportForm extends JFrame {
     }
 
     private void showExportReportDialog() {
-        JDialog dialog = new JDialog(this, "Pratinjau Laporan Eksekutif FloristFlow", true);
+        JDialog dialog = new JDialog(this, "Laporan Eksekutif FloristFlow", true);
         dialog.setSize(650, 600);
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new BorderLayout());
@@ -514,15 +456,13 @@ public class ReportForm extends JFrame {
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
 
-        JButton btnCopy = new JButton("📋 Salin Teks Laporan");
-        btnCopy.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        ModernButton btnCopy = new ModernButton("📋 Salin Teks Laporan", UITheme.PRIMARY, Color.WHITE, 8);
         btnCopy.addActionListener((ActionEvent e) -> {
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(reportText), null);
-            JOptionPane.showMessageDialog(dialog, "Teks laporan berhasil disalin ke Clipboard!", "Sukses Salin", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(dialog, "Teks laporan berhasil disalin ke Clipboard!", "Sukses", JOptionPane.INFORMATION_MESSAGE);
         });
 
-        JButton btnClose = new JButton("Tutup");
-        btnClose.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        ModernButton btnClose = new ModernButton("Tutup", new Color(241, 245, 249), UITheme.TEXT_DARK, 8);
         btnClose.addActionListener((ActionEvent e) -> dialog.dispose());
 
         btnPanel.add(btnCopy);
